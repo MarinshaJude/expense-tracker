@@ -11,41 +11,66 @@ import {
     TrendingUp,
     TrendingDown,
     CalendarDays,
+    Plus,
 } from "lucide-react";
 
 import { useState } from "react";
+import TransactionForm from "../components/transactions/TransactionForm";
+import type { Transaction } from "../types/transaction";
+
 
 const Dashboard = () => {
     const currentDate = new Date();
 
-const [selectedMonth, setSelectedMonth] = useState(
-    String(currentDate.getMonth() + 1).padStart(2, "0")
-);
+    const [selectedMonth, setSelectedMonth] = useState(
+        String(currentDate.getMonth() + 1).padStart(2, "0")
+    );
 
-const [selectedYear, setSelectedYear] = useState(
-    String(currentDate.getFullYear())
-);
-    const { transactions } = useTransactions();
+    const [selectedYear, setSelectedYear] = useState(
+        String(currentDate.getFullYear())
+    );
 
-const {
-    totalBalance,
-    totalIncome,
-    totalExpenses,
-    thisMonthExpenses,
-} = calculateSummary(transactions);
+    const [isFormOpen, setIsFormOpen] = useState(false);
+
+    const { transactions, addTransaction } = useTransactions();
+
+    const handleAddTransaction = (
+        transaction: Omit<Transaction, "id">
+    ) => {
+        addTransaction(transaction);
+        setIsFormOpen(false);
+    };
+
+    const {
+        totalBalance,
+        totalIncome,
+        totalExpenses,
+        thisMonthExpenses,
+    } = calculateSummary(transactions);
+
     return (
         <DashboardLayout>
             <div className="space-y-6">
 
                 {/* Dashboard Heading */}
-                <div>
-                    <h2 className="text-2xl font-bold text-slate-800">
-                        Dashboard Overview
-                    </h2>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h2 className="text-2xl font-bold text-slate-800">
+                            Dashboard Overview
+                        </h2>
 
-                    <p className="text-sm text-slate-500 mt-1">
-                        Track your income and expenses at a glance.
-                    </p>
+                        <p className="text-sm text-slate-500 mt-1">
+                            Track your income and expenses at a glance.
+                        </p>
+                    </div>
+
+                    <button
+                        onClick={() => setIsFormOpen(true)}
+                        className="flex items-center justify-center gap-2 px-4 py-2.5 bg-violet-600 text-white text-sm font-medium rounded-lg hover:bg-violet-700 transition"
+                    >
+                        <Plus size={18} />
+                        Add Transaction
+                    </button>
                 </div>
 
                 {/* Summary Cards */}
@@ -89,20 +114,27 @@ const {
 
                 </div>
 
-              <MonthlyOverview
-    selectedMonth={selectedMonth}
-    selectedYear={selectedYear}
-    setSelectedMonth={setSelectedMonth}
-    setSelectedYear={setSelectedYear}
-/>
+                <MonthlyOverview
+                    selectedMonth={selectedMonth}
+                    selectedYear={selectedYear}
+                    setSelectedMonth={setSelectedMonth}
+                    setSelectedYear={setSelectedYear}
+                />
 
-<CategoryBreakdown
-    selectedMonth={selectedMonth}
-    selectedYear={selectedYear}
-/>
+                <CategoryBreakdown
+                    selectedMonth={selectedMonth}
+                    selectedYear={selectedYear}
+                />
                 <RecentTransactions />
 
             </div>
+
+            <TransactionForm
+                isOpen={isFormOpen}
+                onClose={() => setIsFormOpen(false)}
+                onSubmit={handleAddTransaction}
+            />
+
         </DashboardLayout>
     );
 };
