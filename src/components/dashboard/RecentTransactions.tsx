@@ -1,61 +1,11 @@
 
 import { Link } from "react-router-dom";
 import { ArrowDownLeft, ArrowUpRight, ArrowRight } from "lucide-react";
-
-interface Transaction {
-  id: number;
-  title: string;
-  category: string;
-  date: string;
-  amount: number;
-  type: "income" | "expense";
-}
-
-// Temporary sample transactions
-const transactions: Transaction[] = [
-  {
-    id: 1,
-    title: "Monthly Salary",
-    category: "Income",
-    date: "2026-11-06",
-    amount: 85000,
-    type: "income",
-  },
-  {
-    id: 2,
-    title: "Grocery Shopping",
-    category: "Food",
-    date: "2026-11-05",
-    amount: 4500,
-    type: "expense",
-  },
-  {
-    id: 3,
-    title: "Bus Fare",
-    category: "Transport",
-    date: "2026-11-04",
-    amount: 500,
-    type: "expense",
-  },
-  {
-    id: 4,
-    title: "Freelance Project",
-    category: "Income",
-    date: "2026-11-03",
-    amount: 15000,
-    type: "income",
-  },
-  {
-    id: 5,
-    title: "Electricity Bill",
-    category: "Bills",
-    date: "2026-11-02",
-    amount: 3200,
-    type: "expense",
-  },
-];
+import useTransactions from "../../hooks/useTransactions";
 
 const RecentTransactions = () => {
+  const { transactions } = useTransactions();
+
   const latestTransactions = [...transactions]
     .sort(
       (a, b) =>
@@ -74,7 +24,6 @@ const RecentTransactions = () => {
   return (
     <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm mt-6">
 
-      {/* Heading */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-lg font-semibold text-slate-800">
@@ -94,54 +43,56 @@ const RecentTransactions = () => {
         </Link>
       </div>
 
-      {/* Transaction List */}
       <div className="space-y-4">
-        {latestTransactions.map((transaction) => (
-          <div
-            key={transaction.id}
-            className="flex items-center justify-between gap-4 border-b border-slate-100 pb-4 last:border-0 last:pb-0"
-          >
-            {/* Transaction Details */}
-            <div className="flex items-center gap-3">
+        {latestTransactions.length > 0 ? (
+          latestTransactions.map((transaction) => (
+            <div
+              key={transaction.id}
+              className="flex items-center justify-between gap-4 border-b border-slate-100 pb-4 last:border-0 last:pb-0"
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className={`p-3 rounded-full ${
+                    transaction.type === "income"
+                      ? "bg-green-100 text-green-600"
+                      : "bg-red-100 text-red-600"
+                  }`}
+                >
+                  {transaction.type === "income" ? (
+                    <ArrowDownLeft size={18} />
+                  ) : (
+                    <ArrowUpRight size={18} />
+                  )}
+                </div>
 
-              <div
-                className={`p-3 rounded-full ${
+                <div>
+                  <h3 className="text-sm font-medium text-slate-800">
+                    {transaction.title}
+                  </h3>
+
+                  <p className="text-xs text-slate-500 mt-1">
+                    {transaction.category} · {transaction.date}
+                  </p>
+                </div>
+              </div>
+
+              <p
+                className={`text-sm font-semibold whitespace-nowrap ${
                   transaction.type === "income"
-                    ? "bg-green-100 text-green-600"
-                    : "bg-red-100 text-red-600"
+                    ? "text-green-600"
+                    : "text-red-600"
                 }`}
               >
-                {transaction.type === "income" ? (
-                  <ArrowDownLeft size={18} />
-                ) : (
-                  <ArrowUpRight size={18} />
-                )}
-              </div>
-
-              <div>
-                <h3 className="text-sm font-medium text-slate-800">
-                  {transaction.title}
-                </h3>
-
-                <p className="text-xs text-slate-500 mt-1">
-                  {transaction.category} · {transaction.date}
-                </p>
-              </div>
+                {transaction.type === "income" ? "+" : "-"}
+                {formatAmount(transaction.amount)}
+              </p>
             </div>
-
-            {/* Transaction Amount */}
-            <p
-              className={`text-sm font-semibold whitespace-nowrap ${
-                transaction.type === "income"
-                  ? "text-green-600"
-                  : "text-red-600"
-              }`}
-            >
-              {transaction.type === "income" ? "+" : "-"}
-              {formatAmount(transaction.amount)}
-            </p>
-          </div>
-        ))}
+          ))
+        ) : (
+          <p className="text-center text-sm text-slate-400 py-8">
+            No transactions available yet.
+          </p>
+        )}
       </div>
     </div>
   );

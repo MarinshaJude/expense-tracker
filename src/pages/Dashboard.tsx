@@ -4,7 +4,8 @@ import SummaryCard from "../components/dashboard/SummaryCard";
 import MonthlyOverview from "../components/dashboard/MonthlyOverview";
 import CategoryBreakdown from "../components/dashboard/CategoryBreakdown";
 import RecentTransactions from "../components/dashboard/RecentTransactions";
-
+import useTransactions from "../hooks/useTransactions";
+import { calculateSummary } from "../utils/calculations";
 import {
     Wallet,
     TrendingUp,
@@ -12,7 +13,26 @@ import {
     CalendarDays,
 } from "lucide-react";
 
+import { useState } from "react";
+
 const Dashboard = () => {
+    const currentDate = new Date();
+
+const [selectedMonth, setSelectedMonth] = useState(
+    String(currentDate.getMonth() + 1).padStart(2, "0")
+);
+
+const [selectedYear, setSelectedYear] = useState(
+    String(currentDate.getFullYear())
+);
+    const { transactions } = useTransactions();
+
+const {
+    totalBalance,
+    totalIncome,
+    totalExpenses,
+    thisMonthExpenses,
+} = calculateSummary(transactions);
     return (
         <DashboardLayout>
             <div className="space-y-6">
@@ -33,7 +53,7 @@ const Dashboard = () => {
 
                     <SummaryCard
                         title="Total Balance"
-                        amount={0}
+                        amount={totalBalance}
                         icon={<Wallet size={22} />}
                         iconBgClass="bg-violet-100"
                         iconColorClass="text-violet-600"
@@ -42,7 +62,7 @@ const Dashboard = () => {
 
                     <SummaryCard
                         title="Total Income"
-                        amount={0}
+                        amount={totalIncome}
                         icon={<TrendingUp size={22} />}
                         iconBgClass="bg-green-100"
                         iconColorClass="text-green-600"
@@ -51,7 +71,7 @@ const Dashboard = () => {
 
                     <SummaryCard
                         title="Total Expenses"
-                        amount={0}
+                        amount={totalExpenses}
                         icon={<TrendingDown size={22} />}
                         iconBgClass="bg-red-100"
                         iconColorClass="text-red-600"
@@ -60,7 +80,7 @@ const Dashboard = () => {
 
                     <SummaryCard
                         title="This Month Expenses"
-                        amount={0}
+                        amount={thisMonthExpenses}
                         icon={<CalendarDays size={22} />}
                         iconBgClass="bg-orange-100"
                         iconColorClass="text-orange-600"
@@ -69,10 +89,17 @@ const Dashboard = () => {
 
                 </div>
 
-                {/* Monthly Overview */}
-                <MonthlyOverview />
+              <MonthlyOverview
+    selectedMonth={selectedMonth}
+    selectedYear={selectedYear}
+    setSelectedMonth={setSelectedMonth}
+    setSelectedYear={setSelectedYear}
+/>
 
-                <CategoryBreakdown />
+<CategoryBreakdown
+    selectedMonth={selectedMonth}
+    selectedYear={selectedYear}
+/>
                 <RecentTransactions />
 
             </div>

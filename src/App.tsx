@@ -1,13 +1,18 @@
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
+import Transactions from "./pages/Transactions";
+import { TransactionProvider } from "./context/TransactionContext";
 
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-      </Routes>
+     <TransactionProvider>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/transactions" element={<Transactions />} />
+        </Routes>
+      </TransactionProvider>
     </BrowserRouter>
   );
 }

@@ -8,17 +8,13 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-// Sample expense category data
-const categoryData = [
-  { name: "Food", value: 15000 },
-  { name: "Transport", value: 8000 },
-  { name: "Shopping", value: 12000 },
-  { name: "Bills", value: 10000 },
-  { name: "Entertainment", value: 5000 },
-  { name: "Others", value: 3000 },
-];
+import useTransactions from "../../hooks/useTransactions";
 
-// Colors for each category
+interface CategoryBreakdownProps {
+  selectedMonth: string;
+  selectedYear: string;
+}
+
 const COLORS = [
   "#8b5cf6",
   "#3b82f6",
@@ -28,7 +24,43 @@ const COLORS = [
   "#64748b",
 ];
 
-const CategoryBreakdown = () => {
+const CategoryBreakdown = ({
+  selectedMonth,
+  selectedYear,
+}: CategoryBreakdownProps) => {
+
+  const { transactions } = useTransactions();
+
+  // Filter expenses based on selected month and year
+  const monthlyExpenses = transactions.filter((transaction) => {
+    return (
+      transaction.type === "expense" &&
+      transaction.date.slice(0, 4) === selectedYear &&
+      transaction.date.slice(5, 7) === selectedMonth
+    );
+  });
+
+  // Calculate category-wise expense totals
+  const categoryTotals = monthlyExpenses.reduce<
+    { name: string; value: number }[]
+  >((totals, transaction) => {
+
+    const existingCategory = totals.find(
+      (item) => item.name === transaction.category
+    );
+
+    if (existingCategory) {
+      existingCategory.value += transaction.amount;
+    } else {
+      totals.push({
+        name: transaction.category,
+        value: transaction.amount,
+      });
+    }
+
+    return totals;
+  }, []);
+
   return (
     <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm mt-6">
 
@@ -43,30 +75,44 @@ const CategoryBreakdown = () => {
       </div>
 
       <div className="w-full h-80">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={categoryData}
-              dataKey="value"
-              nameKey="name"
-              cx="50%"
-              cy="50%"
-              innerRadius={65}
-              outerRadius={110}
-              paddingAngle={3}
-            >
-              {categoryData.map((entry, index) => (
-                <Cell
-                  key={entry.name}
-                  fill={COLORS[index % COLORS.length]}
-                />
-              ))}
-            </Pie>
 
-            <Tooltip />
-            <Legend />
-          </PieChart>
-        </ResponsiveContainer>
+        {categoryTotals.length > 0 ? (
+
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+
+              <Pie
+                data={categoryTotals}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                innerRadius={65}
+                outerRadius={110}
+                paddingAngle={3}
+              >
+                {categoryTotals.map((entry, index) => (
+                  <Cell
+                    key={entry.name}
+                    fill={COLORS[index % COLORS.length]}
+                  />
+                ))}
+              </Pie>
+
+              <Tooltip />
+              <Legend />
+
+            </PieChart>
+          </ResponsiveContainer>
+
+        ) : (
+
+          <p className="text-center text-sm text-slate-400 pt-20">
+            No expense data available for the selected month.
+          </p>
+
+        )}
+
       </div>
 
     </div>

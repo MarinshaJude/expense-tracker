@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import useTransactions from "../../hooks/useTransactions";
 
 import {
   BarChart,
@@ -12,33 +12,65 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-// Sample monthly data
-const monthlyData = [
-  { month: "Jan", year: "2026", income: 50000, expenses: 30000 },
-  { month: "Feb", year: "2026", income: 60000, expenses: 35000 },
-  { month: "Mar", year: "2026", income: 55000, expenses: 40000 },
-  { month: "Apr", year: "2026", income: 70000, expenses: 45000 },
-  { month: "May", year: "2026", income: 65000, expenses: 38000 },
-  { month: "Jun", year: "2026", income: 80000, expenses: 50000 },
+const months = [
+  { value: "01", label: "January" },
+  { value: "02", label: "February" },
+  { value: "03", label: "March" },
+  { value: "04", label: "April" },
+  { value: "05", label: "May" },
+  { value: "06", label: "June" },
+  { value: "07", label: "July" },
+  { value: "08", label: "August" },
+  { value: "09", label: "September" },
+  { value: "10", label: "October" },
+  { value: "11", label: "November" },
+  { value: "12", label: "December" },
 ];
 
-const MonthlyOverview = () => {
+interface MonthlyOverviewProps {
+  selectedMonth: string;
+  selectedYear: string;
+  setSelectedMonth: (month: string) => void;
+  setSelectedYear: (year: string) => void;
+}
 
-  // Selected month and year
-  const [selectedMonth, setSelectedMonth] = useState("Jan");
-  const [selectedYear, setSelectedYear] = useState("2026");
+const MonthlyOverview = ({
+  selectedMonth,
+  selectedYear,
+  setSelectedMonth,
+  setSelectedYear,
+}: MonthlyOverviewProps) => {
 
-  // Filter data based on selected month and year
-  const filteredData = monthlyData.filter(
-    (item) =>
-      item.month === selectedMonth &&
-      item.year === selectedYear
-  );
+  const { transactions } = useTransactions();
+
+  const monthlyTransactions = transactions.filter((transaction) => {
+    return (
+      transaction.date.slice(0, 4) === selectedYear &&
+      transaction.date.slice(5, 7) === selectedMonth
+    );
+  });
+
+  const totalIncome = monthlyTransactions
+    .filter((transaction) => transaction.type === "income")
+    .reduce((total, transaction) => total + transaction.amount, 0);
+
+  const totalExpenses = monthlyTransactions
+    .filter((transaction) => transaction.type === "expense")
+    .reduce((total, transaction) => total + transaction.amount, 0);
+
+  const chartData = [
+    {
+      month: months.find((month) => month.value === selectedMonth)?.label,
+      income: totalIncome,
+      expenses: totalExpenses,
+    },
+  ];
+
+  const hasData = monthlyTransactions.length > 0;
 
   return (
     <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm mt-6">
 
-      {/* Heading and Selectors */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
 
         <div>
@@ -51,7 +83,6 @@ const MonthlyOverview = () => {
           </p>
         </div>
 
-        {/* Month and Year Selectors */}
         <div className="flex gap-3">
 
           <select
@@ -59,12 +90,11 @@ const MonthlyOverview = () => {
             onChange={(e) => setSelectedMonth(e.target.value)}
             className="border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none"
           >
-            <option value="Jan">January</option>
-            <option value="Feb">February</option>
-            <option value="Mar">March</option>
-            <option value="Apr">April</option>
-            <option value="May">May</option>
-            <option value="Jun">June</option>
+            {months.map((month) => (
+              <option key={month.value} value={month.value}>
+                {month.label}
+              </option>
+            ))}
           </select>
 
           <select
@@ -72,27 +102,24 @@ const MonthlyOverview = () => {
             onChange={(e) => setSelectedYear(e.target.value)}
             className="border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none"
           >
-            <option value="2025">2025</option>
-            <option value="2026">2026</option>
-            <option value="2027">2027</option>
+            {[2025, 2026, 2027].map((year) => (
+              <option key={year} value={String(year)}>
+                {year}
+              </option>
+            ))}
           </select>
 
         </div>
       </div>
 
-      {/* Monthly Income vs Expenses Chart */}
       <div className="w-full h-80">
 
-        {filteredData.length > 0 ? (
+        {hasData ? (
 
           <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData}>
 
-            <BarChart data={filteredData}>
-
-              <CartesianGrid
-                strokeDasharray="3 3"
-                vertical={false}
-              />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} />
 
               <XAxis dataKey="month" />
 
@@ -102,7 +129,6 @@ const MonthlyOverview = () => {
 
               <Legend />
 
-              {/* Income Bar */}
               <Bar
                 dataKey="income"
                 name="Income"
@@ -110,7 +136,6 @@ const MonthlyOverview = () => {
                 radius={[5, 5, 0, 0]}
               />
 
-              {/* Expenses Bar */}
               <Bar
                 dataKey="expenses"
                 name="Expenses"
@@ -119,7 +144,6 @@ const MonthlyOverview = () => {
               />
 
             </BarChart>
-
           </ResponsiveContainer>
 
         ) : (
