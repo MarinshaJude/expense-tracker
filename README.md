@@ -53,7 +53,7 @@ src/
 ### 1. Clone the repository
 
 ```bash
-git clone YOUR_GITHUB_REPOSITORY_URL
+git clone https://github.com/MarinshaJude/expense-tracker.git
 ```
 
 ### 2. Navigate to the project folder
